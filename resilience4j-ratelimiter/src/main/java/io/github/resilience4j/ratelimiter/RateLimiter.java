@@ -143,6 +143,21 @@ public interface RateLimiter {
     }
 
     /**
+     * Creates a checked consumer which is restricted by a RateLimiter.
+     *
+     * @param rateLimiter the RateLimiter
+     * @param consumer    the original checked consumer
+     * @param <T> the type of the input to the consumer
+     * @return a consumer which is restricted by a RateLimiter.
+     */
+    static <T> Try.CheckedConsumer<T> decorateCheckedConsumer(RateLimiter rateLimiter, Try.CheckedConsumer<T> consumer) {
+        return (T t) -> {
+            waitForPermission(rateLimiter);
+            consumer.accept(t);
+        };
+    }
+
+    /**
      * Creates a runnable which is restricted by a RateLimiter.
      *
      * @param rateLimiter the RateLimiter

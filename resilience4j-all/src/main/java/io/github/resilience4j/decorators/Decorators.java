@@ -51,6 +51,10 @@ public interface Decorators{
         return new DecorateConsumer<>(consumer);
     }
 
+    public static <T> DecorateCheckedConsumer<T> ofCheckedConsumer(Try.CheckedConsumer<T> consumer) {
+        return new DecorateCheckedConsumer<>(consumer);
+    }
+
     class DecorateSupplier<T>{
         private Supplier<T> supplier;
 
@@ -297,6 +301,33 @@ public interface Decorators{
         }
 
         public void accept(T obj) {
+            consumer.accept(obj);
+        }
+    }
+
+    class DecorateCheckedConsumer<T> {
+
+        private Try.CheckedConsumer<T> consumer;
+
+        private DecorateCheckedConsumer(Try.CheckedConsumer<T> consumer) {
+            this.consumer = consumer;
+        }
+
+        public DecorateCheckedConsumer<T> withCircuitBreaker(CircuitBreaker circuitBreaker) {
+            consumer = CircuitBreaker.decorateCheckedConsumer(circuitBreaker, consumer);
+            return this;
+        }
+
+        public DecorateCheckedConsumer<T> withRateLimiter(RateLimiter rateLimiter) {
+            consumer = RateLimiter.decorateCheckedConsumer(rateLimiter, consumer);
+            return this;
+        }
+
+        public Try.CheckedConsumer<T> decorate() {
+            return consumer;
+        }
+
+        public void accept(T obj) throws Throwable {
             consumer.accept(obj);
         }
     }
